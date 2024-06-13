@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload CSV</title>
+	<style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        form {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        input[type="file"] {
+            display: block;
+            margin-bottom: 20px;
+        }
+        button[type="submit"] {
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+	
+    <form action="http://127.0.0.1:5000/predict" method="post" enctype="multipart/form-data">
+        <label for="file">Upload CSV:</label>
+        <input type="file" name="file" id="file">
+        <button type="submit">Submit</button>
+    </form>
+	<!--retrain
+	<form action="http://127.0.0.1:5000/retrain" method="post" enctype="multipart/form-data">
+        <label for="file">Upload CSV:</label>
+        <input type="file" name="file" id="file">
+        <button type="submit">Submit</button>
+    </form>-->
+</body>
+</html>
