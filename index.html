@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload CSV</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url(pic3.jpg);
+            background-color: #cbc6cb;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .form-container {
+            display: flex;
+            justify-content: space-between;
+            width: 80%;
+            max-width: 1000px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        form, .canvas-container {
+            background-color: #ece5ed;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            flex: 1;
+            margin: 0 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        input[type="file"], input[type="text"], button[type="submit"], button[type="button"] {
+            display: block;
+            margin-bottom: 20px;
+            padding: 10px;
+            width: 100%;
+            max-width: 300px;
+        }
+        button[type="submit"], button[type="button"] {
+            background-color: #2f2230;
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+        }
+        button[type="submit"]:hover, button[type="button"]:hover {
+            background-color: #bd87c5;
+        }
+        .emoji-container {
+            font-size: 50px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="form-container">
+        <form action="http://127.0.0.1:5000/upload" method="post" enctype="multipart/form-data">
+            <label for="file">Upload CSV:</label>
+            <input type="file" name="file" id="file">
+            <label for="collection">Collection Name:</label>
+            <input type="text" name="collection" id="collection" placeholder="Enter collection name">
+            <button type="submit">Submit</button>
+        </form>
+
+        <form>
+            <label for="option">Enter Option or "all":</label>
+            <input type="text" name="option" id="option" placeholder="Enter option number or 'all'">
+            <label for="collection-predict">Collection Name:</label>
+            <input type="text" name="collection-predict" id="collection-predict" placeholder="Enter collection name">
+            <button type="button" onclick="fetchAndPredict()">Fetch and Predict</button>
+        </form>
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="predictionChart" width="400" height="200"></canvas>
+        <div class="emoji-container" id="emojiContainer"></div>
+    </div>
+
+    <script>
+        let predictionChart = null; // Initialize chart variable
+
+        function fetchAndPredict() {
+            const option = document.getElementById('option').value;
+            const collection = document.getElementById('collection-predict').value;
+            fetch(`http://127.0.0.1:5000/predict_option?option=${option}&collection=${collection}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        displayChart(data);
+                        displayEmojiOrGif(data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    alert(`Error: ${error.message}`);
+                });
+        }
+
+        function displayChart(data) {
+            const ctx = document.getElementById('predictionChart').getContext('2d');
+            if (predictionChart) {
+                predictionChart.destroy(); // Destroy existing chart if it exists
+            }
+            predictionChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Positive', 'Negative', 'Neutral'],
+                    datasets: [{
+                        data: [data.positive, data.negative, data.neutral],
+                        backgroundColor: ['rgba(75, 192, 192, 0.2)', 'rgba(255, 99, 132, 0.2)', 'rgba(255, 206, 86, 0.2)'],
+                        borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)', 'rgba(255, 206, 86, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: true // Enable legend display
+                        }
+                    }
+                }
+            });
+        }
+
+        function displayEmojiOrGif(data) {
+            const emojiContainer = document.getElementById('emojiContainer');
+            emojiContainer.innerHTML = ''; // Clear previous emoji or GIF
+
+            if (data.positive > data.negative && data.positive > data.neutral) {
+                emojiContainer.innerHTML = '😊'; // Display positive emoji
+            } else if (data.negative > data.positive && data.negative > data.neutral) {
+                emojiContainer.innerHTML = '😢'; // Display negative emoji
+            } else if (data.neutral > data.positive && data.neutral > data.negative) {
+                emojiContainer.innerHTML = '😐'; // Display neutral emoji
+            } else {
+                emojiContainer.innerHTML = '😐'; // Display neutral emoji if counts are equal
+            }
+        }
+    </script>
+</body>
+</html>
